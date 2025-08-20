@@ -163,8 +163,13 @@ if uploaded_file is not None:
         storage_saving = (1 - (svd_values_count / original_pixel_count)) * 100 if original_pixel_count > 0 else 0
 
         st.info(f"**SVD Values Stored:** {int(svd_values_count):,}")
-        st.metric(label="Compression Ratio", value=f"{compression_ratio:.1f}x")
-        st.metric(label="Storage Savings", value=f"{storage_saving:.1f}%")
+        if storage_saving < 0:
+            st.warning("At this high 'k' value, the SVD data is larger than the original image!")
+            st.metric(label="Compression Ratio", value=f"{compression_ratio:.1f}x")
+            st.metric(label="Storage Savings", value=f"{storage_saving:.1f}%")
+        else:
+            st.metric(label="Compression Ratio", value=f"{compression_ratio:.1f}x")
+            st.metric(label="Storage Savings", value=f"{storage_saving:.1f}%")
 
         st.download_button(
            label="Download Reconstructed Image",

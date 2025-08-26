@@ -69,11 +69,11 @@ if uploaded_file:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.image(original_image_pil, caption=f"Original Image ({width}x{height})", use_column_width=True)
+        st.image(original_image_pil, caption=f"Original Image ({width}x{height})", use_container_width=True)
         st.download_button("Download Original", image_to_bytes(original_image_pil), "original.png")
 
     with col2:
-        st.image(reconstructed_image_pil, caption=f"Reconstructed (k={k})", use_column_width=True)
+        st.image(reconstructed_image_pil, caption=f"Reconstructed (k={k})", use_container_width=True)
         st.info("This image is reconstructed using only the top `k` singular values.", icon="💡")
         st.metric(label="Compression Ratio", value=f"{metrics['compression_factor']:.1f}x")
         st.download_button("Download Reconstructed", image_to_bytes(reconstructed_image_pil), f"reconstructed_k{k}.png")
@@ -84,14 +84,14 @@ if uploaded_file:
     col3, col4 = st.columns(2)
 
     with col3:
-        st.image(least_important_image_pil, caption=f"Least Important Ranks (k={k})", use_column_width=True)
-        st.info("This image is built from the `k` smallest singular values.", icon="💡")
+        st.image(least_important_image_pil, caption=f"Least Important Ranks (k={k})", use_container_width=True)
+        st.info("This image is built from the `k` smallest singular values.", icon="✌️")
         st.download_button("Download Least Important", image_to_bytes(least_important_image_pil), f"least_important_k{k}.png")
 
     with col4:
         fig_diff = plot_difference_heatmap(original_image_np, reconstructed_image_np, is_grayscale)
         st.pyplot(fig_diff, use_container_width=True)
-        st.info("The heatmap shows information loss. Brighter areas mean greater difference.", icon="🔥")
+        st.info("The heatmap shows information loss. Brighter areas mean greater difference.", icon="💡")
 
     st.markdown("---")
 
@@ -102,7 +102,7 @@ if uploaded_file:
         status_text = st.empty()
         for i in range(1, k + 1):
             anim_img, _ = reconstruct_images(U_all, s_all, Vh_all, i, is_grayscale)
-            anim_placeholder.image(anim_img, caption=f"Reconstructing with k={i}", use_column_width=True)
+            anim_placeholder.image(anim_img, caption=f"Reconstructing with k={i}", use_container_width=True)
             status_text.progress(i / k)
             time.sleep(0.05)
         status_text.success(f"Animation finished at k={k}!")

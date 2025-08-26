@@ -65,7 +65,7 @@ if uploaded_file:
     st.markdown("---")
     
     # --- Display Images and Metrics ---
-    st.subheader("Image Reconstruction")
+    st.subheader("🖼️ Image Reconstruction")
     col1, col2 = st.columns(2)
     
     with col1:
@@ -80,7 +80,7 @@ if uploaded_file:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.subheader("Visualizing Rank Importance")
+    st.subheader("🔍 Visualizing Rank Importance")
     col3, col4 = st.columns(2)
 
     with col3:
@@ -91,12 +91,12 @@ if uploaded_file:
     with col4:
         fig_diff = plot_difference_heatmap(original_image_np, reconstructed_image_np, is_grayscale)
         st.pyplot(fig_diff, use_container_width=True)
-        st.info("The heatmap shows information loss. Brighter areas mean greater difference.", icon="🔥")
+        st.info("The heatmap shows information loss. Brighter areas mean greater difference.", icon="💡")
 
     st.markdown("---")
 
     # --- Animated Reconstruction ---
-    st.subheader("Animated Reconstruction")
+    st.subheader("🎥 Animated Reconstruction")
     if st.button("▶️ Play Animation (1 to k)", help=f"Reconstructs the image from k=1 up to k={k}"):
         anim_placeholder = st.empty()
         status_text = st.empty()
@@ -110,7 +110,7 @@ if uploaded_file:
     st.markdown("---")
 
     # --- Plots and Data ---
-    st.subheader("Analysis & Metrics")
+    st.subheader("📊 Analysis & Metrics")
     
     col5, col6 = st.columns(2)
     with col5:

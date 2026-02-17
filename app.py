@@ -6,7 +6,15 @@ import time
 # Import functions from your src folder
 from src.utils import resize_image, image_to_bytes, format_bytes
 from src.plotting import plot_singular_values, plot_cumulative_energy, plot_difference_heatmap
-from src.image_processing import get_image_channels, perform_svd, reconstruct_images, calculate_metrics
+from src.image_processing import (
+    get_image_channels,
+    perform_svd,
+    reconstruct_images,
+    calculate_metrics,
+    calculate_psnr,
+    find_k_for_energy,
+    summarize_quality_levels,
+)
 from src.ui_components import display_svd_explanation
 
 # --- Page Configuration ---
@@ -42,16 +50,33 @@ with st.sidebar:
         
         # Perform SVD
         U_all, s_all, Vh_all = perform_svd(channels)
-        
+
         max_k = len(s_all[0])
-        
-        k = st.slider(
-            "Number of Singular Values (k)", 
-            min_value=1, 
-            max_value=max_k, 
-            value=min(30, max_k),
-            help="Select how many of the 'most important' singular values to use for reconstruction."
+
+        selection_mode = st.radio(
+            "Rank Selection Mode",
+            options=["Manual k", "Target energy (%)"],
+            help="Choose a specific rank or let the app pick the smallest rank that reaches a target cumulative energy.",
         )
+
+        if selection_mode == "Manual k":
+            k = st.slider(
+                "Number of Singular Values (k)",
+                min_value=1,
+                max_value=max_k,
+                value=min(30, max_k),
+                help="Select how many of the 'most important' singular values to use for reconstruction.",
+            )
+        else:
+            target_energy = st.slider(
+                "Target cumulative energy (%)",
+                min_value=70,
+                max_value=100,
+                value=95,
+                step=1,
+            )
+            k = find_k_for_energy(s_all, target_energy)
+            st.success(f"Auto-selected k={k} to reach at least {target_energy}% energy in every channel.")
 
 # --- Main Area for Display ---
 if uploaded_file:
@@ -61,6 +86,7 @@ if uploaded_file:
 
     # Calculate metrics
     metrics = calculate_metrics(height, width, len(channels), U_all, s_all, Vh_all, k)
+    psnr_db = calculate_psnr(original_image_np, reconstructed_image_np)
 
     st.markdown("---")
     
@@ -76,6 +102,7 @@ if uploaded_file:
         st.image(reconstructed_image_pil, caption=f"Reconstructed (k={k})", use_container_width=True)
         st.info("This image is reconstructed using only the top `k` singular values.", icon="💡")
         st.metric(label="Compression Ratio", value=f"{metrics['compression_factor']:.1f}x")
+        st.metric(label="PSNR", value=("∞ dB" if np.isinf(psnr_db) else f"{psnr_db:.2f} dB"))
         st.download_button("Download Reconstructed", image_to_bytes(reconstructed_image_pil), f"reconstructed_k{k}.png")
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -139,6 +166,14 @@ if uploaded_file:
         "**Note:** These sizes reflect the theoretical data needed for SVD, not the final downloaded PNG file size, which includes its own overhead and compression.",
         icon="💡"
     )
+
+    st.markdown("#### 🎯 Quality vs Compression Presets")
+    preset_levels = [max(1, max_k // 20), max(1, max_k // 10), max(1, max_k // 5), max(1, max_k // 3), k, max_k]
+    summary_rows = summarize_quality_levels(
+        U_all, s_all, Vh_all, is_grayscale, original_image_np, preset_levels
+    )
+    st.dataframe(summary_rows, use_container_width=True)
+    st.caption("Use this table to quickly choose a rank based on target quality (PSNR) and storage savings.")
 
     if metrics['storage_savings'] < 0:
         st.warning(

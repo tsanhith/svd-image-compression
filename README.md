@@ -8,12 +8,14 @@
 
 - **Real-time SVD Computation:** Upload JPG, JPEG, or PNG images and compute SVD instantly.  
 - **Interactive Rank Selection:** Slider to select the number of singular values (`k`) for reconstruction.  
+- **Auto Rank Selection by Energy:** Set a target cumulative energy (e.g., 95%) and let the app automatically choose the smallest suitable `k`.  
 - **Side-by-Side Comparison:** Original vs reconstructed image visualization.  
 - **Least Important Ranks Visualization:** See discarded image details using the last singular values.  
 - **Information Loss Heatmap:** Visualize absolute error between original and reconstructed images.  
 - **Animated Reconstruction:** Gradually build the image from rank 1 to the selected rank for a dynamic understanding.  
 - **Singular Value & Cumulative Energy Plots:** Visualize energy distribution across singular values for each channel.  
 - **Quantitative Compression Report:** Metrics including SVD values stored, compression ratio, storage savings, and pixel counts.
+- **Quality Benchmark Table:** Built-in preset ranks showing **PSNR**, compression factor, and storage savings for fast decision making.
 
 ---
 
@@ -40,6 +42,8 @@ User Uploads Image
         │
         ├──> Singular Value & Cumulative Energy Plot
         │
+        ├──> Auto-k Selection by Target Energy
+        │
         ├──> Animated Reconstruction (k=1 → selected k)
         │
         ├──> Image Reconstruction:
@@ -47,6 +51,8 @@ User Uploads Image
         │       └─ Least Important Ranks (Last k)
         │
         └──> Information Loss Heatmap
+        │
+        └──> PSNR + Quality/Compression Preset Table
         │
         ▼
    Metrics & Compression Report
@@ -127,9 +133,11 @@ streamlit run app.py
 ## 📊 Learning Insights
 
 - **Energy Preserved Metric:** Shows percentage of total image energy retained by top k singular values.  
+- **PSNR Metric:** Quantifies reconstruction quality in decibels so users can compare objective quality across ranks.  
 - **Difference Visualization:** Highlights areas where image information is lost.  
 - **Animated Reconstruction:** Builds image rank-by-rank to demonstrate reconstruction visually.  
-- **Cumulative Energy Plot:** Emphasizes that most image energy is concentrated in top singular values.
+- **Cumulative Energy Plot:** Emphasizes that most image energy is concentrated in top singular values.  
+- **Preset Quality Table:** Quickly compares rank choices for quality vs compression trade-off.
 
 ---
 

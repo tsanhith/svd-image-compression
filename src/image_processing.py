@@ -112,3 +112,79 @@ def calculate_metrics(height, width, num_channels, U_all, s_all, Vh_all, k):
         "storage_savings": storage_savings,
         "compression_factor": compression_factor
     }
+
+
+def calculate_psnr(original_image_np, reconstructed_image_np):
+    """
+    Calculates Peak Signal-to-Noise Ratio (PSNR) in dB.
+
+    Args:
+        original_image_np (np.ndarray): Original image array in [0, 255].
+        reconstructed_image_np (np.ndarray): Reconstructed image array in [0, 255].
+
+    Returns:
+        float: PSNR value in decibels. Returns inf for perfect reconstruction.
+    """
+    original = original_image_np.astype(np.float32)
+    reconstructed = reconstructed_image_np.astype(np.float32)
+    mse = np.mean((original - reconstructed) ** 2)
+    if mse == 0:
+        return float("inf")
+    max_pixel = 255.0
+    return 20 * np.log10(max_pixel / np.sqrt(mse))
+
+
+def find_k_for_energy(s_all, target_energy_percent):
+    """
+    Finds the smallest k that reaches a target cumulative energy across channels.
+
+    Args:
+        s_all (list[np.ndarray]): Singular values for each channel.
+        target_energy_percent (float): Target energy percentage in [0, 100].
+
+    Returns:
+        int: Smallest k meeting the target for all channels.
+    """
+    target = np.clip(target_energy_percent, 0, 100) / 100.0
+    max_k = len(s_all[0])
+    channel_ks = []
+
+    for s in s_all:
+        energy = np.cumsum(s ** 2) / np.sum(s ** 2)
+        idx = int(np.searchsorted(energy, target, side="left"))
+        channel_ks.append(min(idx + 1, max_k))
+
+    return max(channel_ks)
+
+
+def summarize_quality_levels(U_all, s_all, Vh_all, is_grayscale, original_image_np, k_levels):
+    """
+    Builds a quality/compression summary for selected rank levels.
+
+    Args:
+        U_all, s_all, Vh_all (list): SVD components.
+        is_grayscale (bool): Grayscale flag.
+        original_image_np (np.ndarray): Original image as numpy array.
+        k_levels (list[int]): Rank values to evaluate.
+
+    Returns:
+        list[dict]: Rows with k, psnr, compression and storage metrics.
+    """
+    height, width = original_image_np.shape[:2]
+    num_channels = 1 if is_grayscale else 3
+    rows = []
+
+    for k in sorted(set(k_levels)):
+        recon_pil, _ = reconstruct_images(U_all, s_all, Vh_all, k, is_grayscale)
+        recon_np = np.array(recon_pil, dtype=np.float32)
+        metrics = calculate_metrics(height, width, num_channels, U_all, s_all, Vh_all, k)
+        psnr = calculate_psnr(original_image_np, recon_np)
+        rows.append({
+            "k": k,
+            "psnr_db": psnr,
+            "compression_factor": metrics["compression_factor"],
+            "storage_savings": metrics["storage_savings"],
+            "compressed_storage_bytes": metrics["compressed_storage_bytes"],
+        })
+
+    return rows

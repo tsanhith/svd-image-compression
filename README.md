@@ -1,6 +1,6 @@
 # 🖼️ SVD Image Explorer: An Interactive Deep Dive into Image Compression
 
-**SVD Image Explorer** is a high-performance Streamlit web application that **demonstrates image compression using Singular Value Decomposition (SVD)**. Users can upload images and instantly see the trade-offs between data compression and visual fidelity.
+**SVD Image Explorer** is a high-performance Streamlit web application that **demonstrates image compression using Singular Value Decomposition (SVD)**. Users can upload images and instantly see the trade-offs between data compression and visual fidelity
 
 ---
 
